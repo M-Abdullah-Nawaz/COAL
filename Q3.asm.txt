@@ -1,0 +1,165 @@
+[org 0x100]
+
+call removeSpecial
+call reverseStr
+
+mov di, dx
+mov bx, 0
+mov si, dx
+dec si
+
+loopCmp:
+mov al, [str2 + bx]
+mov dl, [str3 + si]
+
+inc bx
+dec si
+
+cmp al, dl
+jne falseTime
+
+cmp bx, di
+jne loopCmp
+je trueTime
+
+trueTime:
+call clrscr
+mov ax, 0xb800
+mov es, ax
+mov di, 480
+
+mov cx, 0
+mov bx, 0
+mov ah, 0x07
+
+printTrue:
+mov al, [Palin1 + bx]
+mov [es:di], ax
+add di, 2
+inc bx
+
+inc cx
+cmp cx, [trueSize]
+jne printTrue
+jmp end
+
+falseTime:
+call clrscr
+mov ax, 0xb800
+mov es, ax
+mov di, 480
+
+mov cx, 0
+mov bx, 0
+mov ah, 0x07
+
+printFalse:
+mov al, [Palin2 + bx]
+mov [es:di], ax
+add di, 2
+inc bx
+
+inc cx
+cmp cx, [falseSize]
+jne printFalse
+jmp end
+
+end:
+mov ax, 0x4c00
+int 21h
+
+Palin1: db 'Palindrome'
+Palin2: db 'Not palindrome'
+
+trueSize: dw 10
+falseSize: dw 14
+
+str1: db 'A man, a plan, a canal, Panama!!!', 0
+str2: db 0
+str3: db 0
+
+
+
+removeSpecial:
+
+mov ah, 0
+mov bx, 0
+
+nextChar1:
+mov al, [str1 + bx]
+inc bx
+cmp al, 0
+jne nextChar1
+
+dec bx
+mov cx, bx
+
+mov di, 0
+mov bx, -1
+
+nextRead:
+inc bx
+mov dl, [str1 + bx]
+
+cmp dl, 0x41
+je storeStr
+jb smallCmp
+
+nextCmp:
+cmp dl, 0x5A
+jbe storeStr
+
+smallCmp:
+cmp dl, 0x61
+je storeStr
+jb compare
+
+nextSmallCmp:
+cmp dl, 0x7A
+jbe storeStr
+ja compare
+
+storeStr:
+mov [str2 + di], dl
+inc di
+
+compare:
+cmp dl, 0
+jne nextRead
+
+mov dx, di
+
+ret
+
+
+
+reverseStr:
+
+mov cx, dx
+mov bx, dx
+dec bx
+mov si, 0
+
+storeStr2:
+mov al, [str2 + bx]
+mov [str3 + si], al
+inc si
+dec bx
+loop storeStr2
+
+mov cx, dx
+
+ret
+
+
+
+clrscr:
+
+mov ax, 0xb800
+mov es, ax
+mov cx, 2000
+mov ax, 0x0720
+mov di, 0
+rep stosw
+
+ret
